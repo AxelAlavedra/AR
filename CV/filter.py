@@ -45,24 +45,30 @@ def gaussianKernel(krad):
             krn[i,j] = np.exp(-distance**2 / (2*sigma**2))
     return krn/krn.sum()
 
-def bilateralKernel(krad, img, px, py, sigmaColor):
-    sigma = krad/3
+def bilateralKernel(krad, img, px, py, sigmaColor, sigmaDistance):
     ksize = krad*2 + 1
     krn = np.zeros((ksize, ksize))
     for i in range (0, ksize):
         for j in range (0, ksize):
+            neighbour_x = px - (krad - i)
+            neighbour_y = py - (krad - j)
+            if neighbour_x >= len(img):
+                neighbour_x -= len(img)
+            if neighbour_y >= len(img[0]):
+                neighbour_y -= len(img[0])
+
             distance = np.sqrt((krad - i)**2)+((krad - j)**2) #5HEAD   
             po_rgb = img[px][py]
-            pn_rgb = img[i][j]
+            pn_rgb = img[neighbour_x][neighbour_y]
             po_intensity = (po_rgb.max()-po_rgb.min())/po_rgb.max()
             pn_intensity = (pn_rgb.max()-pn_rgb.min())/pn_rgb.max()
             c_range = pn_intensity - po_intensity
-            
-            krn[i,j] = np.exp(-distance**2 / (2*sigma**2) - (c_range**2) / (2*sigmaColor**2))
+       
+            krn[i,j] = np.exp(-distance**2 / (2*sigmaDistance**2) - (np.abs(c_range)**2) / (2*sigmaColor**2))
 
     return krn/krn.sum()
 
-def bilateralFilter(img, krad, sigmaColor):
+def bilateralFilter(img, krad, sigmaColor, sigmaDistance):
     img = img/255.0
     ksize = krad*2 + 1
 
@@ -74,14 +80,14 @@ def bilateralFilter(img, krad, sigmaColor):
     filtered = np.zeros(img.shape)
     for i in range (0,height):
         for j in range(0, width):
-            krn = bilateralKernel(krad, img, i, j, sigmaColor)
+            krn = bilateralKernel(krad, img, i, j, sigmaColor, sigmaDistance)
             filtered[i,j] = (framed[i:i+ksize, j:j+ksize]*krn[:,:, np.newaxis]).sum(axis=(0,1))
 
     return filtered
 
 
 img = cv2.imread('image.jpg',-1)
-img = bilateralFilter(img, 5, 130)
+img = bilateralFilter(img, 5, 20, 20)
 cv2.imshow("MonkaW", img)
 
 k = cv2.waitKey(0)
