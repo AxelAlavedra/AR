@@ -47,7 +47,7 @@ def convolve(img, krn):
 
 def gaussianKernel(krad):
     sigma = krad/3
-    ksize = krad*2 +1
+    ksize = krad*2 + 1
     krn = np.zeros((ksize,ksize))
     for i in range (0, ksize):
         for j in range (0,ksize):
@@ -216,27 +216,6 @@ def cannyEdgeDetector(img, minVal, maxVal):
 
     return filtered
 
-def hystersisThresholding(img, minVal, maxVal):
-    height, width = img.shape
-    filtered = np.zeros(img.shape)
-    
-    for i in range (0,height):
-        for j in range(0, width):
-            if(img[i][j] > maxVal):
-                filtered[i][j] = 1
-            elif(img[i][j] < minVal):
-                filtered[i][j] = 0
-            else:
-                filtered[i][j] = 2
-
-    for i in range (0,height):
-        for j in range(0, width):
-            if(img[i][j] == 2):
-
-
-                
-    return filtered
-
 
 def gradientComputation(gx, gy):
     height, width = gx.shape
@@ -277,11 +256,41 @@ def nonMaximumSupression(gradients, directions):
 
     return filtered
 
+def hystersisThresholding(img, minVal, maxVal):
+    height, width = img.shape
+    filtered = np.zeros(img.shape)
+    
+    for i in range (0, height):
+        for j in range(0, width):
+            if(img[i][j] > maxVal):
+                filtered[i][j] = 1
+            elif(img[i][j] < minVal):
+                filtered[i][j] = 0
+            else:
+                filtered[i][j] = 2
+
+    #frame
+    framed = np.ones((height + 2, width + 2))
+    framed[1:-1, 1:-1] = filtered
+    filtered_2 = filtered.copy()
+
+    for i in range (0, height):
+        for j in range(0, width):
+            if(filtered[i][j] == 2):
+                if(framed[i:i + 3, j:j + 3].any() == 1):
+                    filtered_2[i][j] = 1
+                else:
+                    filtered_2[i][j] = 0
+            
+    return filtered_2
 
 
-img = cv2.imread('download.jpg', 0)
-img = cannyEdgeDetector(img, 0.5, 0.8)
-cv2.imshow("MonkaW", img)
+img = cv2.imread('sonic.png', 0)
+ourcanny = cannyEdgeDetector(img, 0.2, 0.6)
+cv2.imshow("MonkaW", ourcanny)
+
+#cvcanny = cv2.Canny(img, 30, 150)
+#cv2.imshow("MonkaW", cvcanny)
 
 k = cv2.waitKey(0)
 
