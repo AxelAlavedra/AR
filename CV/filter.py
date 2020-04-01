@@ -286,7 +286,7 @@ def hystersisThresholding(img, minVal, maxVal):
 
 
 img = cv2.imread('sonic.png', 0)
-ourcanny = cannyEdgeDetector(img, 0.2, 0.6)
+ourcanny = cannyEdgeDetector(img, 0.15, 0.6)
 cv2.imshow("MonkaW", ourcanny)
 
 #cvcanny = cv2.Canny(img, 30, 150)
